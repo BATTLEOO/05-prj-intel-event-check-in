@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -60,6 +60,9 @@
           <button type="submit" id="checkInBtn">
             <i class="fas fa-user-check"></i> Check In
           </button>
+          <button type="button" id="resetBtn" class="secondary-button">
+            <i class="fas fa-rotate-left"></i> Reset Attendance
+          </button>
         </div>
       </form>
 
@@ -80,6 +83,12 @@
             <span class="team-count" id="powerCount">0</span>
           </div>
         </div>
+      </div>
+
+      <!-- Attendee list -->
+      <div class="attendee-list-section">
+        <h3>Attendee List</h3>
+        <ul id="attendeeList" class="attendee-list"></ul>
       </div>
     </div>
 

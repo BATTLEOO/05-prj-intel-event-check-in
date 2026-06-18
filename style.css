@@ -148,6 +148,18 @@ button:hover {
   box-shadow: 0 6px 15px rgba(0, 113, 197, 0.3);
 }
 
+.secondary-button {
+  background-color: #e2e8f0;
+  color: #0f172a;
+  box-shadow: none;
+}
+
+.secondary-button:hover {
+  background-color: #cbd5e1;
+  color: #0f172a;
+  box-shadow: none;
+}
+
 #checkInBtn {
   flex-shrink: 0;
   white-space: nowrap;
@@ -324,6 +336,47 @@ select {
   margin-bottom: 20px;
 }
 
+.attendee-list-section {
+  margin-top: 30px;
+  padding-top: 30px;
+  border-top: 2px solid #f1f5f9;
+}
+
+.attendee-list-section h3 {
+  color: #64748b;
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+.attendee-list {
+  list-style: none;
+  display: grid;
+  gap: 12px;
+  text-align: left;
+}
+
+.attendee-list li {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.attendee-list .attendee-name {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.attendee-list .attendee-team {
+  color: #475569;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
 .teams-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -403,5 +456,10 @@ select {
 
   .teams-grid {
     grid-template-columns: 1fr;
+  }
+
+  .attendee-list li {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

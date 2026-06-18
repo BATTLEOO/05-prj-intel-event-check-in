@@ -8,6 +8,8 @@ const greetingEl = document.getElementById("greeting");
 const attendeeCountEl = document.getElementById("attendeeCount");
 const progressBar = document.getElementById("progressBar");
 const checkInBtn = document.getElementById("checkInBtn");
+const resetBtn = document.getElementById("resetBtn");
+const attendeeListEl = document.getElementById("attendeeList");
 
 // Team ids and in-memory counts
 const teamIds = {
@@ -17,6 +19,7 @@ const teamIds = {
 };
 
 const teamCounts = {};
+const attendees = [];
 Object.keys(teamIds).forEach(function (key) {
   var el = document.getElementById(teamIds[key]);
   var parsed = el ? parseInt(el.textContent, 10) : NaN;
@@ -46,11 +49,55 @@ function saveState() {
       JSON.stringify({
         count: count,
         teamCounts: teamCounts,
+        attendees: attendees,
       }),
     );
   } catch (error) {
     console.warn("Unable to save check-in state:", error);
   }
+}
+
+function resetAttendanceState() {
+  count = 0;
+  celebrationShown = false;
+
+  Object.keys(teamIds).forEach(function (key) {
+    teamCounts[key] = 0;
+  });
+
+  attendees.length = 0;
+
+  try {
+    localStorage.removeItem(storageKey);
+  } catch (error) {
+    console.warn("Unable to clear check-in state:", error);
+  }
+
+  if (attendeeCountEl) {
+    attendeeCountEl.textContent = "0";
+  }
+
+  Object.keys(teamIds).forEach(function (key) {
+    var teamEl = document.getElementById(teamIds[key]);
+    if (teamEl) {
+      teamEl.textContent = "0";
+    }
+  });
+
+  if (greetingEl) {
+    greetingEl.textContent = "Attendance has been reset.";
+    greetingEl.classList.add("success-message");
+    greetingEl.classList.remove("celebration-message");
+    greetingEl.style.display = "block";
+  }
+
+  if (checkInBtn) {
+    checkInBtn.disabled = false;
+  }
+
+  clearWinningHighlights();
+  renderAttendeeList();
+  updateProgressBar();
 }
 
 function loadState() {
@@ -79,10 +126,57 @@ function loadState() {
           return total + (teamCounts[key] || 0);
         }, 0);
       }
+
+      if (Array.isArray(parsedState.attendees)) {
+        attendees.length = 0;
+        parsedState.attendees.forEach(function (item) {
+          if (
+            item &&
+            typeof item.name === "string" &&
+            typeof item.team === "string" &&
+            typeof item.teamName === "string"
+          ) {
+            attendees.push({
+              name: item.name,
+              team: item.team,
+              teamName: item.teamName,
+            });
+          }
+        });
+      }
     }
   } catch (error) {
     console.warn("Unable to load check-in state:", error);
   }
+}
+
+function renderAttendeeList() {
+  if (!attendeeListEl) return;
+
+  attendeeListEl.innerHTML = "";
+
+  if (attendees.length === 0) {
+    var emptyItem = document.createElement("li");
+    emptyItem.textContent = "No attendees checked in yet.";
+    attendeeListEl.appendChild(emptyItem);
+    return;
+  }
+
+  attendees.forEach(function (attendee) {
+    var item = document.createElement("li");
+
+    var nameSpan = document.createElement("span");
+    nameSpan.className = "attendee-name";
+    nameSpan.textContent = attendee.name;
+
+    var teamSpan = document.createElement("span");
+    teamSpan.className = "attendee-team";
+    teamSpan.textContent = attendee.teamName;
+
+    item.appendChild(nameSpan);
+    item.appendChild(teamSpan);
+    attendeeListEl.appendChild(item);
+  });
 }
 
 function renderSavedCounts() {
@@ -182,6 +276,7 @@ function showCelebration() {
 // Restore saved counts first, then render them into the DOM
 loadState();
 renderSavedCounts();
+renderAttendeeList();
 
 // If capacity already reached, disable check-in
 if (checkInBtn && count >= maxCount) {
@@ -191,6 +286,13 @@ if (checkInBtn && count >= maxCount) {
 
 // Ensure progress bar reflects initial count on load
 updateProgressBar();
+
+if (resetBtn) {
+  resetBtn.addEventListener("click", function () {
+    resetAttendanceState();
+    form.reset();
+  });
+}
 
 // Handle form submission
 form.addEventListener("submit", function (event) {
@@ -245,6 +347,13 @@ form.addEventListener("submit", function (event) {
   teamCounts[team] = (teamCounts[team] || 0) + 1;
   var teamEl = document.getElementById(teamIds[team]);
   if (teamEl) teamEl.textContent = String(teamCounts[team]);
+
+  attendees.push({
+    name: name,
+    team: team,
+    teamName: teamName,
+  });
+  renderAttendeeList();
 
   // Show welcome message
   const message = "Welcome, " + name + " from " + teamName + "!";
