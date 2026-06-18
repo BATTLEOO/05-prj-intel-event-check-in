@@ -27,6 +27,7 @@ Object.keys(teamIds).forEach(function (key) {
 // Track attendance
 let count = 0;
 const maxCount = 50;
+let celebrationShown = false;
 
 // Helper to update progress bar visuals from current count
 function updateProgressBar() {
@@ -35,6 +36,87 @@ function updateProgressBar() {
   numeric = Math.min(Math.max(numeric, 0), 100);
   progressBar.style.width = numeric + "%";
   progressBar.setAttribute("aria-valuenow", String(Math.min(count, maxCount)));
+}
+
+function clearWinningHighlights() {
+  Object.keys(teamIds).forEach(function (key) {
+    var card = document.querySelector(".team-card." + key);
+    if (card) {
+      card.classList.remove("winning-team");
+    }
+  });
+}
+
+function getWinningTeams() {
+  var highestCount = 0;
+  var winners = [];
+
+  Object.keys(teamCounts).forEach(function (key) {
+    var currentCount = teamCounts[key] || 0;
+    if (currentCount > highestCount) {
+      highestCount = currentCount;
+      winners = [key];
+    } else if (currentCount === highestCount) {
+      winners.push(key);
+    }
+  });
+
+  return winners;
+}
+
+function showCelebration() {
+  if (celebrationShown) return;
+
+  celebrationShown = true;
+  clearWinningHighlights();
+
+  var winners = getWinningTeams();
+  var winnerNames = {
+    water: "Team Water Wise",
+    zero: "Team Net Zero",
+    power: "Team Renewables",
+  };
+
+  if (winners.length === 1) {
+    var winningKey = winners[0];
+    var winningCard = document.querySelector(".team-card." + winningKey);
+    if (winningCard) {
+      winningCard.classList.add("winning-team");
+    }
+
+    if (greetingEl) {
+      greetingEl.textContent =
+        "🎉 Attendance goal reached! " +
+        winnerNames[winningKey] +
+        " wins with " +
+        (teamCounts[winningKey] || 0) +
+        " check-ins.";
+      greetingEl.classList.add("success-message");
+      greetingEl.classList.add("celebration-message");
+      greetingEl.style.display = "block";
+    }
+  } else if (winners.length > 1) {
+    winners.forEach(function (key) {
+      var tiedCard = document.querySelector(".team-card." + key);
+      if (tiedCard) {
+        tiedCard.classList.add("winning-team");
+      }
+    });
+
+    if (greetingEl) {
+      greetingEl.textContent =
+        "🎉 Attendance goal reached! It's a tie between " +
+        winners
+          .map(function (key) {
+            return winnerNames[key];
+          })
+          .join(", ") +
+        ".";
+      greetingEl.classList.add("success-message");
+      greetingEl.classList.add("celebration-message");
+      greetingEl.style.display = "block";
+    }
+  }
 }
 
 // Initialize count from the DOM if the page already shows a value
@@ -50,11 +132,7 @@ if (attendeeCountEl) {
 // If capacity already reached, disable check-in
 if (checkInBtn && count >= maxCount) {
   checkInBtn.disabled = true;
-  if (greetingEl) {
-    greetingEl.textContent = "Maximum attendees reached.";
-    greetingEl.classList.add("success-message");
-    greetingEl.style.display = "block";
-  }
+  showCelebration();
 }
 
 // Ensure progress bar reflects initial count on load
@@ -72,11 +150,7 @@ form.addEventListener("submit", function (event) {
 
   // Prevent incrementing past capacity
   if (count >= maxCount) {
-    if (greetingEl) {
-      greetingEl.textContent = "Maximum attendees reached.";
-      greetingEl.classList.add("success-message");
-      greetingEl.style.display = "block";
-    }
+    showCelebration();
     if (checkInBtn) checkInBtn.disabled = true;
     return;
   }
@@ -103,6 +177,7 @@ form.addEventListener("submit", function (event) {
     // invalid team selection — revert total count and warn
     count = Math.max(0, count - 1);
     if (attendeeCountEl) attendeeCountEl.textContent = String(count);
+    updateProgressBar();
     console.warn("Invalid team selected:", team);
     if (greetingEl) {
       greetingEl.textContent = "Please select a valid team.";
@@ -131,6 +206,7 @@ form.addEventListener("submit", function (event) {
   // Disable button if we've reached capacity
   if (count >= maxCount && checkInBtn) {
     checkInBtn.disabled = true;
+    showCelebration();
   }
 
   form.reset();

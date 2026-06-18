@@ -25,7 +25,8 @@ body {
 
 /* Hero Section */
 .hero {
-  background: linear-gradient(
+  background:
+    linear-gradient(
       135deg,
       rgba(0, 153, 219, 0.9) 0%,
       rgba(0, 104, 181, 0.9) 50%,
@@ -258,6 +259,12 @@ button .fas {
   color: #003c71;
 }
 
+.celebration-message {
+  border: 2px solid #f5c542;
+  box-shadow: 0 0 0 4px rgba(245, 197, 66, 0.18);
+  font-weight: 700;
+}
+
 /* Counter */
 #attendeeCount {
   color: #0071c5;
@@ -329,6 +336,10 @@ select {
   display: flex;
   flex-direction: column;
   gap: 5px;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    outline 0.25s ease;
 }
 
 /* Team card colors */
@@ -340,6 +351,18 @@ select {
 }
 .team-card.power {
   background-color: #fff7ed;
+}
+
+.team-card.winning-team {
+  outline: 3px solid #f5c542;
+  box-shadow: 0 10px 24px rgba(245, 197, 66, 0.25);
+  transform: translateY(-2px) scale(1.02);
+}
+
+.team-card.winning-team .team-name,
+.team-card.winning-team .team-count {
+  color: #9a6700;
+  font-weight: 700;
 }
 
 .team-name {
