@@ -12,6 +12,16 @@ const progressBar = document.getElementById("progressBar");
 let count = 0;
 const maxCount = 50;
 
+// Initialize count from the DOM if the page already shows a value
+if (attendeeCountEl) {
+  const parsed = parseInt(attendeeCountEl.textContent, 10);
+  if (!isNaN(parsed)) {
+    count = parsed;
+  } else {
+    attendeeCountEl.textContent = String(count);
+  }
+}
+
 // Handle form submission
 form.addEventListener("submit", function (event) {
   event.preventDefault(); // avoid refresh
@@ -41,9 +51,14 @@ form.addEventListener("submit", function (event) {
     progressBar.setAttribute("aria-valuenow", String(count));
   }
 
-  // Update the team counter
+  // Update the team counter (guard against missing element)
   const teamCounter = document.getElementById(team + "Count");
-  teamCounter.textContent = parseInt(teamCounter.textContent) + 1;
+  if (teamCounter) {
+    const currentTeamCount = parseInt(teamCounter.textContent, 10) || 0;
+    teamCounter.textContent = String(currentTeamCount + 1);
+  } else {
+    console.warn("Team counter element not found for:", team);
+  }
 
   // Show welcome message
   const message = "Welcome, " + name + " from " + teamName + "!";
