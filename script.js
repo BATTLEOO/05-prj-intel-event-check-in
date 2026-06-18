@@ -28,6 +28,7 @@ Object.keys(teamIds).forEach(function (key) {
 let count = 0;
 const maxCount = 50;
 let celebrationShown = false;
+const storageKey = "intelEventCheckInState";
 
 // Helper to update progress bar visuals from current count
 function updateProgressBar() {
@@ -36,6 +37,65 @@ function updateProgressBar() {
   numeric = Math.min(Math.max(numeric, 0), 100);
   progressBar.style.width = numeric + "%";
   progressBar.setAttribute("aria-valuenow", String(Math.min(count, maxCount)));
+}
+
+function saveState() {
+  try {
+    localStorage.setItem(
+      storageKey,
+      JSON.stringify({
+        count: count,
+        teamCounts: teamCounts,
+      }),
+    );
+  } catch (error) {
+    console.warn("Unable to save check-in state:", error);
+  }
+}
+
+function loadState() {
+  try {
+    var storedState = localStorage.getItem(storageKey);
+    if (!storedState) return;
+
+    var parsedState = JSON.parse(storedState);
+
+    if (parsedState && typeof parsedState === "object") {
+      if (
+        parsedState.teamCounts &&
+        typeof parsedState.teamCounts === "object"
+      ) {
+        Object.keys(teamIds).forEach(function (key) {
+          if (typeof parsedState.teamCounts[key] === "number") {
+            teamCounts[key] = parsedState.teamCounts[key];
+          }
+        });
+      }
+
+      if (typeof parsedState.count === "number") {
+        count = parsedState.count;
+      } else {
+        count = Object.keys(teamCounts).reduce(function (total, key) {
+          return total + (teamCounts[key] || 0);
+        }, 0);
+      }
+    }
+  } catch (error) {
+    console.warn("Unable to load check-in state:", error);
+  }
+}
+
+function renderSavedCounts() {
+  if (attendeeCountEl) {
+    attendeeCountEl.textContent = String(count);
+  }
+
+  Object.keys(teamIds).forEach(function (key) {
+    var teamEl = document.getElementById(teamIds[key]);
+    if (teamEl) {
+      teamEl.textContent = String(teamCounts[key] || 0);
+    }
+  });
 }
 
 function clearWinningHighlights() {
@@ -119,15 +179,9 @@ function showCelebration() {
   }
 }
 
-// Initialize count from the DOM if the page already shows a value
-if (attendeeCountEl) {
-  const parsed = parseInt(attendeeCountEl.textContent, 10);
-  if (!isNaN(parsed)) {
-    count = parsed;
-  } else {
-    attendeeCountEl.textContent = String(count);
-  }
-}
+// Restore saved counts first, then render them into the DOM
+loadState();
+renderSavedCounts();
 
 // If capacity already reached, disable check-in
 if (checkInBtn && count >= maxCount) {
@@ -208,6 +262,8 @@ form.addEventListener("submit", function (event) {
     checkInBtn.disabled = true;
     showCelebration();
   }
+
+  saveState();
 
   form.reset();
 });
