@@ -102,6 +102,8 @@ body {
   display: flex;
   gap: 15px;
   width: 100%;
+  flex-wrap: wrap;
+  align-items: stretch;
 }
 
 /* Form elements */
@@ -305,10 +307,15 @@ button .fas {
 
 /* Input wrapper for name and team select */
 .input-wrapper {
-  flex: 1;
+  flex: 1 1 100%;
   display: flex;
   gap: 10px;
   min-width: 0;
+}
+
+#checkInBtn,
+#resetBtn {
+  flex: 1 1 220px;
 }
 
 select {
