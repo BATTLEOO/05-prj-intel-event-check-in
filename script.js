@@ -28,6 +28,15 @@ Object.keys(teamIds).forEach(function (key) {
 let count = 0;
 const maxCount = 50;
 
+// Helper to update progress bar visuals from current count
+function updateProgressBar() {
+  if (!progressBar) return;
+  var numeric = Math.round((count / maxCount) * 100);
+  numeric = Math.min(Math.max(numeric, 0), 100);
+  progressBar.style.width = numeric + "%";
+  progressBar.setAttribute("aria-valuenow", String(Math.min(count, maxCount)));
+}
+
 // Initialize count from the DOM if the page already shows a value
 if (attendeeCountEl) {
   const parsed = parseInt(attendeeCountEl.textContent, 10);
@@ -47,6 +56,9 @@ if (checkInBtn && count >= maxCount) {
     greetingEl.style.display = "block";
   }
 }
+
+// Ensure progress bar reflects initial count on load
+updateProgressBar();
 
 // Handle form submission
 form.addEventListener("submit", function (event) {
@@ -73,9 +85,9 @@ form.addEventListener("submit", function (event) {
   count++;
   console.log("Total check-ins:", count);
 
-  // Update progress bar
-  const percentage = Math.round((count / maxCount) * 100) + "%";
-  console.log(`Progress: ${percentage}`);
+  // Update progress bar (numeric percent)
+  var percent = Math.round((count / maxCount) * 100);
+  console.log("Progress:", percent + "%");
 
   // Update attendee count in header (cap at maxCount)
   const displayedCount = Math.min(count, maxCount);
@@ -84,12 +96,7 @@ form.addEventListener("submit", function (event) {
   }
 
   // Update visual progress bar
-  if (progressBar) {
-    // cap width at 100%
-    const width = Math.min(parseInt(percentage, 10), 100) + "%";
-    progressBar.style.width = width;
-    progressBar.setAttribute("aria-valuenow", String(displayedCount));
-  }
+  updateProgressBar();
 
   // Validate team selection and update team counts
   if (!team || !teamIds.hasOwnProperty(team)) {
