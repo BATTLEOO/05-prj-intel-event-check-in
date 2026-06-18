@@ -9,6 +9,21 @@ const attendeeCountEl = document.getElementById("attendeeCount");
 const progressBar = document.getElementById("progressBar");
 const checkInBtn = document.getElementById("checkInBtn");
 
+// Team ids and in-memory counts
+const teamIds = {
+  water: "waterCount",
+  zero: "zeroCount",
+  power: "powerCount",
+};
+
+const teamCounts = {};
+Object.keys(teamIds).forEach(function (key) {
+  var el = document.getElementById(teamIds[key]);
+  var parsed = el ? parseInt(el.textContent, 10) : NaN;
+  teamCounts[key] = !isNaN(parsed) ? parsed : 0;
+  if (el) el.textContent = String(teamCounts[key]);
+});
+
 // Track attendance
 let count = 0;
 const maxCount = 50;
@@ -76,14 +91,24 @@ form.addEventListener("submit", function (event) {
     progressBar.setAttribute("aria-valuenow", String(displayedCount));
   }
 
-  // Update the team counter (guard against missing element)
-  const teamCounter = document.getElementById(team + "Count");
-  if (teamCounter) {
-    const currentTeamCount = parseInt(teamCounter.textContent, 10) || 0;
-    teamCounter.textContent = String(currentTeamCount + 1);
-  } else {
-    console.warn("Team counter element not found for:", team);
+  // Validate team selection and update team counts
+  if (!team || !teamIds.hasOwnProperty(team)) {
+    // invalid team selection — revert total count and warn
+    count = Math.max(0, count - 1);
+    if (attendeeCountEl) attendeeCountEl.textContent = String(count);
+    console.warn("Invalid team selected:", team);
+    if (greetingEl) {
+      greetingEl.textContent = "Please select a valid team.";
+      greetingEl.classList.add("success-message");
+      greetingEl.style.display = "block";
+    }
+    return;
   }
+
+  // Increment in-memory team count and update DOM
+  teamCounts[team] = (teamCounts[team] || 0) + 1;
+  var teamEl = document.getElementById(teamIds[team]);
+  if (teamEl) teamEl.textContent = String(teamCounts[team]);
 
   // Show welcome message
   const message = "Welcome, " + name + " from " + teamName + "!";
