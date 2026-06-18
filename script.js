@@ -52,6 +52,8 @@ form.addEventListener("submit", function (event) {
   if (greetingEl) {
     greetingEl.textContent = message;
     greetingEl.setAttribute("aria-live", "polite");
+    greetingEl.classList.add("success-message");
+    greetingEl.style.display = "block";
   }
 
   form.reset();
